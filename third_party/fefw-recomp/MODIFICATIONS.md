@@ -46,7 +46,7 @@ vendored into the Xenoblade Chronicles 2 NS2E recomp project. Upstream base and 
 | `runtime/src/gfx/nvn/nvn_gpu_texture.cpp` | 2026-11-16 | 3.0.1 bring-up through 2026-11-16: rim audit, cloud shimmer, upscaler chain, FSR version override |
 | `runtime/src/gfx/nvn/nvn_pipeline.cpp` | 2026-11-16 | 3.0.1 bring-up through 2026-11-16: rim audit, cloud shimmer, upscaler chain, FSR version override |
 | `runtime/src/gfx/nvn/nvn_pipeline.h` | 2026-11-14 | nvn: push the uniform buffers as push descriptors ([nvn] push_uniforms, ubo_only_rebind) |
-| `runtime/src/gfx/nvn/nvn_replay.cpp` | 2026-11-16 | replay: pipe/fb hot-path audit (round 45, 9.7-15.4 -> 5.3-6.8 ms); fsr_follow_size; fs trace_stack_file off; s |
+| `runtime/src/gfx/nvn/nvn_replay.cpp` | 2026-11-21 | replay: pipe/fb hot-path audit (round 45, 9.7-15.4 -> 5.3-6.8 ms); fsr_follow_size; fs trace_stack_file off; s; quads split along the 1-3 diagonal, vertex 3 provoking (a seam across the cloud sea in the salvage dive) |
 | `runtime/src/gfx/nvn/nvn_shaders.cpp` | 2026-11-16 | 3.0.1 bring-up through 2026-11-16: rim audit, cloud shimmer, upscaler chain, FSR version override |
 | `runtime/src/gfx/nvn/nvn_spirv_patch.cpp` | 2026-11-16 | 3.0.1 bring-up through 2026-11-16: rim audit, cloud shimmer, upscaler chain, FSR version override |
 | `runtime/src/gfx/nvn/nvn_spirv_patch.h` | 2026-11-16 | 3.0.1 bring-up through 2026-11-16: rim audit, cloud shimmer, upscaler chain, FSR version override |
@@ -141,3 +141,8 @@ git log --oneline 6f1d964..HEAD -- third_party/fefw-recomp
   visible in a player's log without asking them to time anything. Each summary also carries a `per frame:` split of the
   window (replay, idle, present, gpu wait, upload, pipe, pool import, guest service and wait, ms per frame): the slow-frame
   lines describe the tail, and a steady 20-30 fps is made of the average frame, which nothing reported before.
+
+- **runtime/src/gfx/nvn/nvn_replay.cpp (2026-11-21)** - QUADS are split along the 1-3 diagonal, as (3,0,1) and (3,1,2): the same winding,
+  and vertex 3, the last vertex of the quad as in GL and NVN, provokes both triangles. The 0-2 split put a hard horizontal seam across the
+  cloud sea when the camera dives into it (the salvage dive): the cloud raymarch draws one quad (vs 818474df, fs 17cdd28d) whose
+  outputs do not interpolate linearly across the plane, and with that camera its 0-2 diagonal ran straight across the screen.

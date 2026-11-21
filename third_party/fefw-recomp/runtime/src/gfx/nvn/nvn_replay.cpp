@@ -4485,7 +4485,11 @@ std::vector<uint32_t> convert_prim_indices(PrimConversion conv, const std::vecto
     const size_t n = in.size();
     switch (conv) {
         case PrimConversion::Quads:
-            for (size_t q = 0; q + 3 < n; q += 4) idx.insert(idx.end(), {in[q], in[q + 1], in[q + 2], in[q], in[q + 2], in[q + 3]});
+            // Split along the 1-3 diagonal, each triangle starting at vertex 3: the same winding, and with Vulkan's first-vertex
+            // convention vertex 3 provokes both halves, the last vertex of the quad, as GL and NVN do. The 0-2 split put a hard seam
+            // across XC2 NS2's cloud sea when the camera dives into it (the salvage dive): the raymarch quad (vs 818474df) passes
+            // values that do not interpolate linearly across the plane, and its 0-2 diagonal ran straight across the screen.
+            for (size_t q = 0; q + 3 < n; q += 4) idx.insert(idx.end(), {in[q + 3], in[q], in[q + 1], in[q + 3], in[q + 1], in[q + 2]});
             break;
         case PrimConversion::QuadStrip:
             for (size_t q = 0; q + 3 < n; q += 2) idx.insert(idx.end(), {in[q], in[q + 1], in[q + 2], in[q + 2], in[q + 1], in[q + 3]});
